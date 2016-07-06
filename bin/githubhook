@@ -47,11 +47,18 @@ github.listen();
 
 // trigger
 github.on(options['<trigger>'], function () {
+  // Convert arguments to an array
+  var args = Array.prototype.slice.call(arguments);
   var scriptPath = path.resolve(options['<script>']);
 
-  child_process.execFile(scriptPath, function(err, stdout, stderr) {
+  // Parse key data points (always the last argument)
+  var data = args.slice(-1).pop();
+  var repo = data ? data.repository.name : null;
+  var ref = data ? data.ref : null;
+
+  child_process.execFile(scriptPath, [ repo, ref ], function(err, stdout, stderr) {
     if (options['--verbose']) {
-      console.log('--> EXEC ' + scriptPath);
+      console.log('--> EXEC', scriptPath, repo, ref);
 
       if (err) {
         console.error(err.stack);
@@ -60,7 +67,7 @@ github.on(options['<trigger>'], function () {
         console.log(stdout);
       }
 
-      console.log('--- END ' + scriptPath);
+      console.log('--- END', scriptPath);
     }
   });
 });
